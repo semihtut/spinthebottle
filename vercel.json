@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd apps/pwa && npm install && npm run build",
+  "outputDirectory": "apps/pwa/dist",
+  "installCommand": "cd apps/pwa && npm install",
+  "framework": "vite"
+}
