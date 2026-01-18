@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a24"/>
+      <stop offset="100%" stop-color="#0f0f14"/>
+    </linearGradient>
+    <linearGradient id="bottleBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="30%" stop-color="#34d399"/>
+      <stop offset="70%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="bottleNeck" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#6ee7b7"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Glow effect -->
+  <ellipse cx="256" cy="280" rx="120" ry="180" fill="url(#glow)"/>
+
+  <!-- Bottle body -->
+  <ellipse cx="256" cy="320" rx="64" ry="120" fill="url(#bottleBody)"/>
+
+  <!-- Body highlight -->
+  <ellipse cx="232" cy="300" rx="16" ry="72" fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Neck -->
+  <path d="M232 200 L232 120 Q232 100 240 100 L272 100 Q280 100 280 120 L280 200 Q280 212 256 220 Q232 212 232 200" fill="url(#bottleNeck)"/>
+
+  <!-- Neck highlight -->
+  <rect x="236" y="108" width="12" height="100" rx="4" fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Cap -->
+  <rect x="228" y="60" width="56" height="48" rx="12" fill="#065f46"/>
+
+  <!-- Cap ring -->
+  <rect x="224" y="96" width="64" height="12" rx="4" fill="#047857"/>
+
+  <!-- Pointer -->
+  <polygon points="256,24 240,56 272,56" fill="#ef4444"/>
+
+  <!-- Circular arrow hint -->
+  <path d="M380 256 A130 130 0 0 1 336 370" stroke="#8b5cf6" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <polygon points="336,358 324,382 352,376" fill="#8b5cf6" opacity="0.6"/>
+</svg>

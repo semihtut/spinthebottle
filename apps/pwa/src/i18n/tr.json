@@ -1,0 +1,63 @@
+{
+  "app": {
+    "title": "Şişe Çevirmece",
+    "subtitle": "Doğruluk mu Cesaret mi"
+  },
+  "home": {
+    "play": "Oyna",
+    "packs": "Paketler",
+    "settings": "Ayarlar"
+  },
+  "setup": {
+    "title": "Kurulum",
+    "environment": "Ortam",
+    "players": "Oyuncular",
+    "minPlayers": "En az 3 oyuncu",
+    "addPlayer": "Ekle",
+    "playerPlaceholder": "Oyuncu adı",
+    "intensity": "Yoğunluk",
+    "intensityLight": "Hafif",
+    "intensityMedium": "Orta",
+    "intensityBold": "Cesur",
+    "startGame": "Oyunu Başlat"
+  },
+  "game": {
+    "spinHint": "Şişeyi çevirmek için kaydır!",
+    "spinning": "Dönüyor...",
+    "players": "Oyuncular"
+  },
+  "prompt": {
+    "truth": "Doğruluk",
+    "dare": "Cesaret",
+    "skip": "Geç",
+    "replace": "Değiştir",
+    "done": "Tamam"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "audio": "Ses",
+    "soundEffects": "Ses Efektleri",
+    "sfxVolume": "Efekt Sesi",
+    "ambienceVolume": "Ortam Sesi",
+    "accessibility": "Erişilebilirlik",
+    "reducedMotion": "Azaltılmış Hareket",
+    "reducedMotionDesc": "Animasyonları kapat",
+    "haptics": "Dokunsal Geri Bildirim",
+    "hapticsDesc": "Eylemlerde titreşim",
+    "language": "Dil",
+    "reset": "Varsayılanlara Sıfırla"
+  },
+  "packs": {
+    "title": "Paketler",
+    "defaultPacks": "Varsayılan Paketler",
+    "lightFun": "Hafif ve Eğlenceli",
+    "lightFunDesc": "Basit sorular ve kolay cesaretler",
+    "partyMode": "Parti Modu",
+    "partyModeDesc": "Daha maceralı görevler"
+  },
+  "environments": {
+    "desktop": "Masa Üstü",
+    "lounge": "Otantik Salon",
+    "rooftop": "Çatı Katı"
+  }
+}

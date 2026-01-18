@@ -1,0 +1,63 @@
+{
+  "app": {
+    "title": "Spin the Bottle",
+    "subtitle": "Truth or Dare"
+  },
+  "home": {
+    "play": "Play",
+    "packs": "Packs",
+    "settings": "Settings"
+  },
+  "setup": {
+    "title": "Setup",
+    "environment": "Environment",
+    "players": "Players",
+    "minPlayers": "Min 3 players",
+    "addPlayer": "Add",
+    "playerPlaceholder": "Player name",
+    "intensity": "Intensity",
+    "intensityLight": "Light",
+    "intensityMedium": "Medium",
+    "intensityBold": "Bold",
+    "startGame": "Start Game"
+  },
+  "game": {
+    "spinHint": "Swipe the bottle to spin!",
+    "spinning": "Spinning...",
+    "players": "Players"
+  },
+  "prompt": {
+    "truth": "Truth",
+    "dare": "Dare",
+    "skip": "Skip",
+    "replace": "Replace",
+    "done": "Done"
+  },
+  "settings": {
+    "title": "Settings",
+    "audio": "Audio",
+    "soundEffects": "Sound Effects",
+    "sfxVolume": "SFX Volume",
+    "ambienceVolume": "Ambience Volume",
+    "accessibility": "Accessibility",
+    "reducedMotion": "Reduced Motion",
+    "reducedMotionDesc": "Disable animations",
+    "haptics": "Haptic Feedback",
+    "hapticsDesc": "Vibration on actions",
+    "language": "Language",
+    "reset": "Reset to Defaults"
+  },
+  "packs": {
+    "title": "Packs",
+    "defaultPacks": "Default Packs",
+    "lightFun": "Light & Fun",
+    "lightFunDesc": "Silly icebreakers and easy dares",
+    "partyMode": "Party Mode",
+    "partyModeDesc": "More adventurous challenges"
+  },
+  "environments": {
+    "desktop": "Desktop Table",
+    "lounge": "Authentic Lounge",
+    "rooftop": "Rooftop City"
+  }
+}
