@@ -3,8 +3,10 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameStore, useSettingsStore } from '@/app/providers';
 import { BottleSpinner, EnvironmentBackground, PromptCard, type BottleSpinnerRef } from '@/ui/components';
 import { useSpinGesture, useAudio, useHaptics } from '@/hooks';
-import { SpinEngine, type SpinResult } from '@/engine/spin';
+import { type SpinResult, pickFinalAngle, generateSpinSeed, angleToPlayerIndex } from '@/engine/spin';
 import { promptSelector, initializePrompts } from '@/data';
+import { normalizeAngle, TAU } from '@/utils/math';
+import { clamp } from '@/utils/clamp';
 import type { Prompt } from '@/domain';
 
 export default function GamePage() {
@@ -23,7 +25,6 @@ export default function GamePage() {
 
   const bottleRef = useRef<BottleSpinnerRef>(null);
   const gestureAreaRef = useRef<HTMLDivElement>(null);
-  const spinEngineRef = useRef<SpinEngine | null>(null);
   const [statusMessage, setStatusMessage] = useState(
     locale === 'tr' ? 'Şişeyi çevirmek için kaydır!' : 'Swipe the bottle to spin!'
   );
@@ -51,16 +52,6 @@ export default function GamePage() {
     initializePrompts().then(() => setPromptsInitialized(true));
   }, []);
 
-  // Initialize spin engine
-  useEffect(() => {
-    spinEngineRef.current = new SpinEngine({
-      friction: environment.surfaceFriction,
-    });
-
-    return () => {
-      spinEngineRef.current?.cancel();
-    };
-  }, [environment.surfaceFriction]);
 
   // Load audio profile and play ambience when environment changes
   useEffect(() => {
@@ -108,15 +99,15 @@ export default function GamePage() {
 
   const handleGestureEnd = useCallback(
     (gesture: { velocityX: number; velocityY: number; duration: number }) => {
-      if (phase !== 'idle' || !spinEngineRef.current || !bottleRef.current) {
+      if (phase !== 'idle' || !bottleRef.current) {
         return;
       }
 
       setPhase('spinning');
       setStatusMessage(locale === 'tr' ? 'Dönüyor...' : 'Spinning...');
 
-      const engine = spinEngineRef.current;
       const bottle = bottleRef.current;
+      const currentAngle = bottle.getCurrentAngle();
 
       // Calculate initial velocity for audio
       const gestureMagnitude = Math.sqrt(gesture.velocityX ** 2 + gesture.velocityY ** 2);
@@ -126,43 +117,23 @@ export default function GamePage() {
       playTap(Math.min(initialVelocity / 10, 1));
       playSpinLoop(initialVelocity);
 
-      engine.onCompleteCallback((result) => {
-        handleSpinComplete(result);
-      });
+      // Generate seed and compute final angle directly (synchronously)
+      const seed = generateSpinSeed();
+      const finalAngle = pickFinalAngle(seed);
+      const selectedIndex = angleToPlayerIndex(finalAngle, playerCount);
 
-      engine.onFrameCallback((event) => {
-        if (event.type === 'frame') {
-          // The bottle component handles its own animation via CSS
-        }
-      });
+      // Calculate duration based on gesture strength
+      const normalizedGesture = clamp(gestureMagnitude / 1000, 0.3, 1);
+      const duration = 2000 + 4000 * normalizedGesture;
 
-      // Start the spin - the engine will calculate the fair final angle
-      engine.start(
-        gesture,
-        playerCount,
-        undefined,
-        bottle.getCurrentAngle()
-      );
-
-      // Get the result synchronously to animate the bottle
-      const seed = Date.now();
-      const tempEngine = new SpinEngine({ friction: environment.surfaceFriction });
-      let finalAngle = 0;
-      let duration = 3000;
-
-      tempEngine.onCompleteCallback((result) => {
-        finalAngle = result.finalAngle;
-        duration = result.duration;
-      });
-
-      tempEngine.start(gesture, playerCount, seed, bottle.getCurrentAngle());
-
-      // Calculate duration based on gesture
-      const normalizedGesture = Math.min(Math.max(gestureMagnitude / 1000, 0.3), 1);
-      duration = 2000 + 4000 * normalizedGesture;
+      // Calculate total rotation (multiple full spins + final position)
+      const startAngle = normalizeAngle(currentAngle);
+      const minRotations = 3 + Math.floor(normalizedGesture * 3);
+      const angleDiff = finalAngle - startAngle;
+      const totalRotation = startAngle + minRotations * TAU + angleDiff;
 
       // Animate the bottle to the final position
-      bottle.spin(finalAngle, duration);
+      bottle.spin(totalRotation, duration);
 
       // Animate spin audio velocity decay
       const startTime = Date.now();
@@ -181,20 +152,15 @@ export default function GamePage() {
 
       // Set completion after animation
       setTimeout(() => {
-        tempEngine.cancel();
-        const selectedIndex = Math.floor(
-          (((finalAngle + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2)) * playerCount
-        ) % playerCount;
-
         handleSpinComplete({
-          finalAngle,
+          finalAngle: normalizeAngle(totalRotation),
           selectedPlayerIndex: selectedIndex,
           duration,
           seed,
         });
       }, duration);
     },
-    [phase, playerCount, environment.surfaceFriction, setPhase, handleSpinComplete, playTap, playSpinLoop, updateSpinVelocity, locale]
+    [phase, playerCount, setPhase, handleSpinComplete, playTap, playSpinLoop, updateSpinVelocity, locale]
   );
 
   // Set up gesture detection
