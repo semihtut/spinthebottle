@@ -1,7 +1,5 @@
 export { LoadingScreen } from './LoadingScreen';
 export { BottleSpinner, type BottleSpinnerRef } from './BottleSpinner';
-export { PlayerChip } from './PlayerChip';
-export { PlayerRing } from './PlayerRing';
 export { EnvironmentBackground } from './EnvironmentBackground';
 export { EnvironmentPicker } from './EnvironmentPicker';
 export { PromptCard } from './PromptCard';

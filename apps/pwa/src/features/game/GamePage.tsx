@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameStore, useSettingsStore } from '@/app/providers';
-import { BottleSpinner, PlayerRing, EnvironmentBackground, PromptCard, type BottleSpinnerRef } from '@/ui/components';
+import { BottleSpinner, EnvironmentBackground, PromptCard, type BottleSpinnerRef } from '@/ui/components';
 import { useSpinGesture, useAudio, useHaptics } from '@/hooks';
 import { SpinEngine, type SpinResult } from '@/engine/spin';
 import { promptSelector, initializePrompts } from '@/data';
@@ -11,7 +11,7 @@ export default function GamePage() {
   const navigate = useNavigate();
   const locale = useSettingsStore((s) => s.locale);
   const {
-    players,
+    playerCount,
     phase,
     currentPlayerIndex,
     environment,
@@ -77,12 +77,12 @@ export default function GamePage() {
     };
   }, [environment.audioProfileId, loadProfile, playAmbience, stopAmbience, isInitialized]);
 
-  // Redirect if not enough players
+  // Redirect if playerCount is invalid
   useEffect(() => {
-    if (players.length < 3) {
+    if (playerCount < 3) {
       navigate('/setup');
     }
-  }, [players.length, navigate]);
+  }, [playerCount, navigate]);
 
   const handleSpinComplete = useCallback(
     (result: SpinResult) => {
@@ -95,14 +95,15 @@ export default function GamePage() {
       setSpinSeed(result.seed);
       setPhase('choosing');
 
-      const selectedPlayer = players[result.selectedPlayerIndex];
+      // Show player number (1-indexed for display)
+      const playerNumber = result.selectedPlayerIndex + 1;
       setStatusMessage(
         locale === 'tr'
-          ? `${selectedPlayer?.name || 'Oyuncu'} seçiyor!`
-          : `${selectedPlayer?.name || 'Player'}'s turn!`
+          ? `Oyuncu ${playerNumber} seçiyor!`
+          : `Player ${playerNumber}'s turn!`
       );
     },
-    [players, setCurrentPlayerIndex, setSpinSeed, setPhase, stopSpinLoop, playSettle, locale, haptic]
+    [setCurrentPlayerIndex, setSpinSeed, setPhase, stopSpinLoop, playSettle, locale, haptic]
   );
 
   const handleGestureEnd = useCallback(
@@ -138,7 +139,7 @@ export default function GamePage() {
       // Start the spin - the engine will calculate the fair final angle
       engine.start(
         gesture,
-        players.length,
+        playerCount,
         undefined,
         bottle.getCurrentAngle()
       );
@@ -154,7 +155,7 @@ export default function GamePage() {
         duration = result.duration;
       });
 
-      tempEngine.start(gesture, players.length, seed, bottle.getCurrentAngle());
+      tempEngine.start(gesture, playerCount, seed, bottle.getCurrentAngle());
 
       // Calculate duration based on gesture
       const normalizedGesture = Math.min(Math.max(gestureMagnitude / 1000, 0.3), 1);
@@ -182,8 +183,8 @@ export default function GamePage() {
       setTimeout(() => {
         tempEngine.cancel();
         const selectedIndex = Math.floor(
-          (((finalAngle + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2)) * players.length
-        ) % players.length;
+          (((finalAngle + Math.PI / 2) % (Math.PI * 2)) / (Math.PI * 2)) * playerCount
+        ) % playerCount;
 
         handleSpinComplete({
           finalAngle,
@@ -193,7 +194,7 @@ export default function GamePage() {
         });
       }, duration);
     },
-    [phase, players.length, environment.surfaceFriction, setPhase, handleSpinComplete, playTap, playSpinLoop, updateSpinVelocity, locale]
+    [phase, playerCount, environment.surfaceFriction, setPhase, handleSpinComplete, playTap, playSpinLoop, updateSpinVelocity, locale]
   );
 
   // Set up gesture detection
@@ -265,7 +266,10 @@ export default function GamePage() {
     );
   }, [setPhase, setCurrentPlayerIndex, locale]);
 
-  const currentPlayer = currentPlayerIndex !== null ? players[currentPlayerIndex] : null;
+  // Calculate selected sector angle for indicator
+  const selectedSectorAngle = currentPlayerIndex !== null
+    ? (currentPlayerIndex / playerCount) * 360
+    : null;
 
   return (
     <div className="flex-1 flex flex-col relative overflow-hidden">
@@ -282,25 +286,32 @@ export default function GamePage() {
           <span className="text-xl">&larr;</span>
         </Link>
         <span className="text-[var(--color-text-muted)]">
-          {players.length} {locale === 'tr' ? 'Oyuncu' : 'Players'}
+          {playerCount} {locale === 'tr' ? 'Oyuncu' : 'Players'}
         </span>
       </header>
 
       {/* Game area */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4">
-        <div className="relative w-full max-w-md aspect-square">
-          {/* Player ring */}
-          <PlayerRing
-            players={players}
-            selectedIndex={currentPlayerIndex}
-            currentTurnIndex={phase === 'choosing' || phase === 'prompt' ? currentPlayerIndex : null}
-            className="absolute inset-0"
-          />
+        <div className="relative w-full max-w-sm aspect-square flex items-center justify-center">
+          {/* Selection indicator glow - shows after spin stops */}
+          {selectedSectorAngle !== null && phase !== 'idle' && phase !== 'spinning' && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `conic-gradient(
+                  from ${selectedSectorAngle - (180 / playerCount)}deg,
+                  transparent 0deg,
+                  rgba(239, 68, 68, 0.3) ${180 / playerCount}deg,
+                  transparent ${360 / playerCount}deg
+                )`,
+              }}
+            />
+          )}
 
           {/* Gesture capture area + Bottle */}
           <div
             ref={gestureAreaRef}
-            className={`absolute inset-[20%] flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${
+            className={`relative w-full h-full flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${
               phase === 'idle' ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
             }`}
             role="button"
@@ -314,7 +325,7 @@ export default function GamePage() {
           >
             <BottleSpinner
               ref={bottleRef}
-              className="w-16 h-44"
+              className="w-20 h-52"
               onSpinComplete={() => {}}
             />
           </div>
@@ -326,12 +337,12 @@ export default function GamePage() {
           role="status"
           aria-live="polite"
         >
-          {phase === 'choosing' && currentPlayer ? (
+          {phase === 'choosing' && currentPlayerIndex !== null ? (
             <div className="space-y-4">
               <p className="text-xl font-bold">
                 {locale === 'tr'
-                  ? `${currentPlayer.name} seçiyor!`
-                  : `${currentPlayer.name}'s turn!`}
+                  ? `Oyuncu ${currentPlayerIndex + 1} seçiyor!`
+                  : `Player ${currentPlayerIndex + 1}'s turn!`}
               </p>
               <div className="flex gap-4 justify-center">
                 <button

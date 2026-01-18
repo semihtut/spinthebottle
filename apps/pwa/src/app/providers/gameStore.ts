@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { Player, Prompt, Environment, HouseRules } from '@/domain';
+import type { Prompt, Environment, HouseRules } from '@/domain';
 import { DEFAULT_ENVIRONMENTS, DEFAULT_HOUSE_RULES } from '@/domain';
 
 export type GamePhase = 'idle' | 'spinning' | 'choosing' | 'prompt' | 'done';
@@ -9,8 +9,8 @@ interface GameState {
   // Game phase
   phase: GamePhase;
 
-  // Players
-  players: Player[];
+  // Player count (3-15) - simplified from named players
+  playerCount: number;
   currentPlayerIndex: number | null;
 
   // Prompt selection
@@ -28,10 +28,7 @@ interface GameState {
 
   // Actions
   setPhase: (phase: GamePhase) => void;
-  addPlayer: (player: Player) => void;
-  removePlayer: (playerId: string) => void;
-  updatePlayer: (playerId: string, updates: Partial<Player>) => void;
-  setPlayers: (players: Player[]) => void;
+  setPlayerCount: (count: number) => void;
   setCurrentPlayerIndex: (index: number | null) => void;
   setSelectedType: (type: 'truth' | 'dare' | null) => void;
   setCurrentPrompt: (prompt: Prompt | null) => void;
@@ -44,7 +41,7 @@ interface GameState {
 
 const initialState = {
   phase: 'idle' as GamePhase,
-  players: [],
+  playerCount: 4,
   currentPlayerIndex: null,
   selectedType: null,
   currentPrompt: null,
@@ -61,36 +58,8 @@ export const useGameStore = create<GameState>()(
 
         setPhase: (phase) => set({ phase }, false, 'setPhase'),
 
-        addPlayer: (player) =>
-          set(
-            (state) => ({
-              players: [...state.players, player],
-            }),
-            false,
-            'addPlayer'
-          ),
-
-        removePlayer: (playerId) =>
-          set(
-            (state) => ({
-              players: state.players.filter((p) => p.id !== playerId),
-            }),
-            false,
-            'removePlayer'
-          ),
-
-        updatePlayer: (playerId, updates) =>
-          set(
-            (state) => ({
-              players: state.players.map((p) =>
-                p.id === playerId ? { ...p, ...updates } : p
-              ),
-            }),
-            false,
-            'updatePlayer'
-          ),
-
-        setPlayers: (players) => set({ players }, false, 'setPlayers'),
+        setPlayerCount: (count) =>
+          set({ playerCount: Math.min(15, Math.max(3, count)) }, false, 'setPlayerCount'),
 
         setCurrentPlayerIndex: (index) =>
           set({ currentPlayerIndex: index }, false, 'setCurrentPlayerIndex'),
@@ -143,7 +112,7 @@ export const useGameStore = create<GameState>()(
       {
         name: 'game-store',
         partialize: (state) => ({
-          players: state.players,
+          playerCount: state.playerCount,
           environment: state.environment,
           houseRules: state.houseRules,
         }),
